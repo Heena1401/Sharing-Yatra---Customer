@@ -222,8 +222,9 @@
   </div>
 
   <script>
-    // --- Change this depending on where you deploy your backend ---
-const API_BASE = "http://localhost:5000";
+    const API_BASE = window.location.origin.includes("localhost")
+      ? "http://localhost:5000"
+      : "";
 
     const getMsg = (id) => document.getElementById(`${id}-message`);
     const showMsg = (id, text, type = 'info') => {
