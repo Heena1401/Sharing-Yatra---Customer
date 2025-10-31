@@ -1,7 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
-const cors = require('cors');
 // const bodyParser = require('body-parser'); // No longer needed
 const path = require('path');
 const fs = require("fs");
@@ -18,7 +17,16 @@ const Driver = require("./models/Driver");
 require("dotenv").config();
 
 const app = express();
-app.use(cors());
+const cors = require("cors");
+
+app.use(cors({
+  origin: [
+    "http://localhost:5000",
+    "http://localhost:3000",
+    "https://sharing-yatra-customer.vercel.app"
+  ],
+  credentials: true
+}));
 // ====== Middleware ======
 // FIX: Use built-in Express parsers instead of deprecated body-parser
 app.use(express.json());
