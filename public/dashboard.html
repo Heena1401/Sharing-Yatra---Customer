@@ -294,20 +294,26 @@
   </div>
 
   <script>
+   // 1. DEFINE YOUR API_BASE
+    //    It MUST point to your BACKEND URL, not your frontend.
     const API_BASE = window.location.hostname.includes("localhost")
       ? "http://localhost:5000"
-      : "https://sharing-yatra-backend.vercel.app";  // 👈 use your backend domain here (not frontend)
+      : "https://sharing-yatra-backend.vercel.app"; // 👈 PUT YOUR BACKEND URL HERE
 
-    // 🔥 Auto-prefix all fetch() calls automatically
+    // 2. CREATE THE FETCH WRAPPER
+    //    This automatically adds the API prefix AND credentials
     const originalFetch = window.fetch;
     window.fetch = (url, options = {}) => {
-      // Always include credentials for session cookies
-      options.credentials = "include"; // 👈 important
+        // This is the most important line for sessions
+        options.credentials = "include";
 
-      if (url.startsWith("http") || url.startsWith(API_BASE)) {
-        return originalFetch(url, options);
-      }
-      return originalFetch(`${API_BASE}${url}`, options);
+        // Don't modify URLs that are already absolute
+        if (url.startsWith("http") || url.startsWith(API_BASE)) {
+            return originalFetch(url, options);
+        }
+        
+        // Prepend the API_BASE to all other requests
+        return originalFetch(`${API_BASE}${url}`, options);
     };
     // Small util to create profile rows safely
     function row(label, value) {
