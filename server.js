@@ -1,7 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
-// const bodyParser = require('body-parser'); // No longer needed
 const path = require('path');
 const fs = require("fs");
 const Agencies = require('./models/Agencies');
@@ -68,6 +67,10 @@ transporter.verify((error, success) => {
 });
 
 // ====== Session Setup ======
+// Define if we are in production (Vercel) or development (local)
+const isProduction = process.env.NODE_ENV === 'production';
+
+// ====== Session Setup ======
 app.use(session({
   secret: process.env.SESSION_SECRET || "secret123",
   resave: false,
@@ -79,8 +82,10 @@ app.use(session({
   cookie: {
     maxAge: 1000 * 60 * 60, // 1 hour
     httpOnly: true,
-    secure: true,           // cookies only over HTTPS on Vercel
-    sameSite: "none"        // allow cross-site cookies
+    // Use secure cookies only in production (HTTPS)
+    secure: isProduction,
+    // 'none' for cross-site (Vercel), 'lax' for same-site (local)
+    sameSite: isProduction ? "none" : "lax"
   }
 }));
 
