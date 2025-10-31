@@ -19,11 +19,11 @@ require("dotenv").config();
 const app = express();
 const cors = require("cors");
 
+
 app.use(cors({
   origin: [
-    "http://localhost:5000",
-    "http://localhost:3000",
-    "https://sharing-yatra-customer.vercel.app"
+    "https://sharing-yatra-customer.vercel.app",   // frontend (Vercel)
+    "http://localhost:5000"                        // local testing
   ],
   credentials: true
 }));
@@ -79,10 +79,11 @@ app.use(session({
   cookie: {
     maxAge: 1000 * 60 * 60, // 1 hour
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+    secure: true,           // cookies only over HTTPS on Vercel
+    sameSite: "none"        // allow cross-site cookies
   }
 }));
+
 
 // ====== OTP Rate Limiter ======
 const otpLimiter = rateLimit({

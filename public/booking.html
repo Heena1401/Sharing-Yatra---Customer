@@ -515,18 +515,21 @@
 
 
     <script>
-             const API_BASE = window.location.hostname.includes("localhost")
-    ? "http://localhost:5000"
-    : "https://sharing-yatra-customer-git-main-heenas-projects-46f0fe3a.vercel.app";
+        const API_BASE = window.location.hostname.includes("localhost")
+            ? "http://localhost:5000"
+            : "https://sharing-yatra-backend.vercel.app";  // 👈 use your backend domain here (not frontend)
 
-  // 🔥 Auto-prefix all fetch() calls automatically
-  const originalFetch = window.fetch;
-  window.fetch = (url, options) => {
-    if (url.startsWith('http') || url.startsWith(API_BASE)) {
-      return originalFetch(url, options);
-    }
-    return originalFetch(`${API_BASE}${url}`, options);
-  };
+        // 🔥 Auto-prefix all fetch() calls automatically
+        const originalFetch = window.fetch;
+        window.fetch = (url, options = {}) => {
+            // Always include credentials for session cookies
+            options.credentials = "include"; // 👈 important
+
+            if (url.startsWith("http") || url.startsWith(API_BASE)) {
+                return originalFetch(url, options);
+            }
+            return originalFetch(`${API_BASE}${url}`, options);
+        };
         // --- DOM Element References ---
         const bookingForm = document.getElementById('bookingForm');
         const submitButton = document.getElementById('submitButton');
