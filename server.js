@@ -19,13 +19,13 @@ const app = express();
 const cors = require("cors");
 
 
-app.use(cors({
-  origin: [
-    "https://sharing-yatra-customer.vercel.app",   // frontend (Vercel)
-    "http://localhost:5000"                        // local testing
-  ],
-  credentials: true
-}));
+// app.use(cors({
+//   origin: [
+//     "https://sharing-yatra-customer.vercel.app",   // frontend (Vercel)
+//     "http://localhost:5000"                        // local testing
+//   ],
+//   credentials: true
+// }));
 // ====== Middleware ======
 // FIX: Use built-in Express parsers instead of deprecated body-parser
 app.use(express.json());
@@ -67,10 +67,17 @@ transporter.verify((error, success) => {
 });
 
 // ====== Session Setup ======
-// Define if we are in production (Vercel) or development (local)
-const isProduction = process.env.NODE_ENV === 'production';
+app.set('trust proxy', 1); // <-- important for vercel to handle HTTPS
 
-// ====== Session Setup ======
+app.use(cors({
+  origin: [
+    "https://sharing-yatra-customer.vercel.app",
+    "http://localhost:5000",
+    "http://localhost:3000"
+  ],
+  methods: ["GET", "POST"],
+  credentials: true,
+}));
 
 app.use(session({
   secret: process.env.SESSION_SECRET || "secret123",
@@ -78,14 +85,14 @@ app.use(session({
   saveUninitialized: false,
   store: MongoStore.create({
     mongoUrl: process.env.MONGO_URI,
-    collectionName: "sessions",
+    collectionName: "sessions"
   }),
   cookie: {
     maxAge: 1000 * 60 * 60, // 1 hour
     httpOnly: true,
-    secure: true,  // Force secure cookies for HTTPS (Vercel)
-    sameSite: "none" // Allow cross-site cookies
-  }
+    secure: true,           // HTTPS only for vercel
+    sameSite: "none",       // Allow cross-origin cookies
+  },
 }));
 
 // ====== OTP Rate Limiter ======
