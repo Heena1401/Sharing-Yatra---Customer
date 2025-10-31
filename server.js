@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
-const bodyParser = require('body-parser');
+// const bodyParser = require('body-parser'); // No longer needed
 const path = require('path');
 const fs = require("fs");
 const Agencies = require('./models/Agencies');
@@ -11,27 +11,18 @@ const User = require("./models/User");
 const OTP = require("./models/OTP");
 const Counter = require("./models/Counter");
 const Booking = require("./models/Booking");
-
-require("dotenv").config();
-
+const rateLimit = require('express-rate-limit');
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
+const Driver = require("./models/Driver");
+require("dotenv").config();
 
 const app = express();
-app.use(bodyParser.json());
-app.use(cors({
-  origin: [
-    "http://localhost:5000",
-    "https://customer-0lnl.onrender.com"
-  ],
-  methods: "GET,POST",
-  credentials: true
-}));
-
-
-app.use(bodyParser.json());
-
-// Serve public folder
+app.use(cors());
+// ====== Middleware ======
+// FIX: Use built-in Express parsers instead of deprecated body-parser
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ====== MongoDB Setup ======
@@ -50,20 +41,22 @@ async function getNextBookingId() {
     { $inc: { seq: 1 } },
     { new: true, upsert: true }
   );
-  return "BO113" + counter.seq; // e.g., BO1112
+  return "BO113" + counter.seq;
 }
 
 // ====== Email Transporter ======
 const transporter = nodemailer.createTransport({
   service: 'gmail',
-  // auth: {
-  //   user: 'sharingyatra@gmail.com',
-  //   pass: 'ksnkixrxdktmtbgs' // App password
-  // }
   auth: {
     user: process.env.USER,
-    pass: process.env.PASS
-  }
+    pass: process.env.PASS,
+  },
+});
+
+// Verify transporter on startup
+transporter.verify((error, success) => {
+  if (error) console.log('❌ Email transporter verification failed:', error);
+  else console.log('✅ Email server is ready to send messages');
 });
 
 // ====== Session Setup ======
@@ -83,84 +76,86 @@ app.use(session({
   }
 }));
 
+// ====== OTP Rate Limiter ======
+const otpLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  message: { success: false, message: 'Too many OTP requests. Try again after an hour.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // ====== Generate OTP ======
-// ✅ Updated Generate OTP with SendGrid
-app.post('/generate-otp', otpLimiter, async (req, res) => {
+app.post('/generate-otp', async (req, res) => {
   const { email } = req.body;
 
   try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: 'Email already registered' });
-    }
-
-    await OTP.deleteMany({ email });
-
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    await OTP.create({ email, otp });
+    await OTP.create({ email, otp, createdAt: new Date() });
 
-    console.log(`📩 OTP for ${email}: ${otp} (valid 3 min)`);
-
-    // ✅ HTML email template
-    const emailHTML = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <style>
-          body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
-          .container { max-width: 600px; margin: 30px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-          .header { text-align: center; color: #5b92e5; margin-bottom: 20px; }
-          .otp-box { background: #f0f4f8; padding: 25px; border-radius: 10px; text-align: center; margin: 20px 0; }
-          .otp-code { font-size: 36px; font-weight: bold; color: #5b92e5; letter-spacing: 8px; margin: 15px 0; }
-          .warning { color: #dc3545; font-weight: bold; margin-top: 20px; }
-          .footer { text-align: center; color: #666; font-size: 12px; margin-top: 30px; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>Sharing Yatra</h1>
-            <h2>Email Verification</h2>
-          </div>
-          <p>Dear user,</p>
-          <p>Thank you for signing up with Sharing Yatra. To complete your registration, please use the following One-Time Password (OTP):</p>
-          <div class="otp-box">
-            <p style="margin: 0; font-size: 14px; color: #666;">Your OTP is:</p>
-            <div class="otp-code">${otp}</div>
-            <p style="margin: 10px 0 0 0; font-size: 12px; color: #999;">Valid for 3 minutes</p>
-          </div>
-          <p class="warning">⚠️ Do not share this code with anyone. Our team will never ask for your OTP.</p>
-          <p>If you didn't request this OTP, please ignore this email.</p>
-          <div class="footer">
-            <p>Best regards,<br><strong>Sharing Yatra Team</strong></p>
-            <p>This is an automated message, please do not reply.</p>
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.USER,
+        pass: process.env.PASS,
+      },
+    });
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || 'no-reply@sharingyatra.com',
+      to: email,
+      subject: "🚗 Here's Your Sharing Yatra Access Code",
+      html: `
+    <div style="font-family: 'Arial', sans-serif; max-width: 550px; margin: auto; background: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.07);">
+      
+      <div style="background: #2b7dacff; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Sharing Yatra</h1>
+      </div>
+      
+      <div style="padding: 30px 35px;">
+        <h2 style="color: #333; font-size: 20px; margin-top: 0;">Confirm Your Account</h2>
+        <p style="color: #555; font-size: 16px; line-height: 1.6;">
+          Thanks for signing up! Please use the following code to complete your registration.
+        </p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <p style="font-size: 14px; color: #888; margin: 0 0 10px 0;">Your verification code is:</p>
+          <div style="background: #f1f8f7; border: 2px dashed #2a9d8f; border-radius: 5px; padding: 15px 20px; display: inline-block;">
+            <span style="font-size: 36px; font-weight: 700; color: #264653; letter-spacing: 4px;">${otp}</span>
           </div>
         </div>
-      </body>
-      </html>
-    `;
+        
+        <p style="font-size: 15px; color: #e76f51; font-weight: bold; text-align: center;">
+          This code is valid for 5 minutes.
+        </p>
+        <p style="font-size: 14px; color: #555; line-height: 1.6; text-align: center;">
+          For your security, please do not share this code with anyone.
+        </p>
+      </div>
+      
+      <div style="background: #f9f9f9; padding: 20px 35px; border-radius: 0 0 8px 8px; border-top: 1px solid #eee;">
+        <p style="font-size: 12px; color: #999; text-align: center; margin: 0;">
+          Happy travels,<br>The Sharing Yatra Team
+        </p>
+        <p style="font-size: 10px; color: #aaa; text-align: center; margin-top: 10px;">
+          © ${new Date().getFullYear()} Sharing Yatra. All rights reserved.
+        </p>
+      </div>
+    </div>
+  `
+    };
 
-    // ✅ Send email via SendGrid
-    const result = await sendEmailViaSendGrid(
-      email,
-      'Your OTP Code - Sharing Yatra',
-      `Your OTP is ${otp}. It will expire in 3 minutes. Do not share this code with anyone.`,
-      emailHTML
-    );
-
-    if (result.success) {
-      res.json({ success: true, message: 'OTP sent successfully to your email' });
-    } else {
-      // OTP still saved in DB, but email failed
-      res.status(500).json({ 
-        success: false, 
-        message: 'Failed to send OTP email. Please try again.' 
-      });
-    }
-
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('❌ Email error:', error);
+        return res.status(500).json({ success: false, message: 'Failed to send OTP email' });
+      } else {
+        console.log('✅ OTP email sent:', info.response);
+        return res.json({ success: true, message: 'OTP sent successfully' });
+      }
+    });
   } catch (err) {
-    console.error('❌ Error in generate-otp:', err);
-    res.status(500).json({ success: false, message: 'Failed to send OTP' });
+    console.error('❌ Error generating OTP:', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
 
@@ -175,15 +170,22 @@ app.post('/register', async (req, res) => {
       return res.status(400).json({ success: false, message: 'OTP not generated or expired' });
     }
 
-    if (!username || username.trim() === "") {
-      return res.status(400).json({ success: false, message: 'Name is required' });
-    }
-
     if (otpRecord.otp !== otp) {
       return res.status(400).json({ success: false, message: 'Invalid OTP' });
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const otpAge = (Date.now() - otpRecord.createdAt.getTime()) / 1000 / 60;
+    if (otpAge > 3) {
+      await OTP.deleteOne({ email });
+      return res.status(400).json({ success: false, message: 'OTP expired. Please request a new one.' });
+    }
+
+    if (!username || username.trim() === "") {
+      return res.status(400).json({ success: false, message: 'Name is required' });
+    }
+
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
         success: false,
@@ -206,12 +208,11 @@ app.post('/register', async (req, res) => {
 
     res.json({ success: true, message: 'User registered successfully' });
   } catch (err) {
-    console.error('Error registering user:', err);
-    res.status(500).json({ success: false, message: 'Registration failed' });
+    console.error('❌ Error registering user:', err.message || err);
+    res.status(500).json({ success: false, message: 'Registration failed', error: err.message });
   }
 });
 
-// ====== Routes ======
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'option.html'));
 });
@@ -252,7 +253,6 @@ app.post("/login", async (req, res) => {
       name: userType === "customer" ? account.username : "Agency",
       type: userType
     };
-
     res.json({ success: true, message: "Login successful" });
   } catch (err) {
     console.error("Login Error:", err);
@@ -489,45 +489,22 @@ console.log("✅ Rail Graph Built (Transfer Penalty: 0.5 km)");
 // --- END: RAIL GRAPH IMPLEMENTATION ---
 
 // REMOVED: The old stationData definition and unused getRouteDetails function
-
 function parseTime(date, timeString) {
-  if (!timeString) {
-    throw new Error("Booking time is missing");
+  if (!timeString || !/^\d{1,2}:\d{2}$/.test(timeString)) {
+    // Ab yeh sirf "HH:mm" format accept karega
+    throw new Error(`Invalid 24-hour time format. Expected "HH:mm", but got "${timeString}"`);
   }
 
-  // If format is "HH:mm" (24hr)
-  if (/^\d{1,2}:\d{2}$/.test(timeString)) {
-    const [hours, minutes] = timeString.split(":").map(Number);
-    const d = new Date(date);
-    d.setHours(hours, minutes, 0, 0);
-    return d;
-  }
-
-  // If format is "h:mm AM/PM"
-  const parts = timeString.split(" ");
-  if (parts.length !== 2) {
-    throw new Error("Invalid time format, must be 'h:mm AM/PM' or 'HH:mm'");
-  }
-
-  const [time, modifier] = parts;
-  let [hours, minutes] = time.split(":").map(Number);
-
-  if (modifier.toUpperCase() === "PM" && hours < 12) hours += 12;
-  if (modifier.toUpperCase() === "AM" && hours === 12) hours = 0;
-
+  const [hours, minutes] = timeString.split(":").map(Number);
   const d = new Date(date);
   d.setHours(hours, minutes, 0, 0);
   return d;
 }
 
 function formatTime(date) {
-  let hours = date.getHours();
-  let minutes = date.getMinutes();
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12;
-  hours = hours ? hours : 12; // the hour '0' should be '12'
-  minutes = minutes < 10 ? '0' + minutes : minutes;
-  return hours + ':' + minutes + ' ' + ampm;
+  let hours = String(date.getHours()).padStart(2, '0');
+  let minutes = String(date.getMinutes()).padStart(2, '0');
+  return hours + ':' + minutes; // e.g., "09:05" or "15:08"
 }
 
 // NEW FUNCTION: Calculates arrival times based on shortest path
@@ -648,29 +625,51 @@ app.get("/api/search-rides", async (req, res) => {
     const searchStation = address ? address.toLowerCase() : "";
     console.log("Searching agencies near:", searchStation);
 
-    // FIX #1 & #2: Using the correct 'Agencies' model and the correct query logic
     const agencies = await Agencies.find({
       $expr: {
         $regexMatch: {
-          input: searchStation, // The full address (e.g., "near station, thane")
-          regex: { $concat: ["\\b", "$oprateStation", "\\b"] }, // The station name (e.g., "thane")
-          options: "i" // Case-insensitive
+          input: searchStation,
+          regex: { $concat: ["\\b", "$oprateStation", "\\b"] },
+          options: "i"
         }
       }
     });
 
     if (!agencies.length) {
-      // FIX #3: Send a proper 404 error, not a 200 OK
       return res.status(404).json({ message: "No agencies found for this station." });
     }
 
-    // For each agency, fetch its vehicles
     const agenciesWithVehicles = await Promise.all(
       agencies.map(async (agency) => {
-        // FIX #1: Use the correct model variable 'Vehicle' (singular)
-        const vehicles = await Vehicle.find({ agencyId: agency._id });
 
-        // This format matches what your frontend expects
+        // --- UPDATE HERE: Using aggregate to handle String/Number types ---
+        const vehicles = await Vehicle.aggregate([
+          {
+            // Step 1: Pehle agencyId se match karein (yeh fast hai)
+            $match: { agencyId: agency._id }
+          },
+          {
+            // Step 2: Ek naya field banayein 'converted_capacity'
+            $addFields: {
+              converted_capacity: {
+                $cond: {
+                  // Agar max_capacity pehle se hi number hai
+                  if: { $isNumber: "$max_capacity" },
+                  // Toh wahi value use karo
+                  then: "$max_capacity",
+                  // Varna (agar woh string hai), usse Integer mein badlo
+                  else: { $toInt: "$max_capacity" }
+                }
+              }
+            }
+          },
+          {
+            // Step 3: Ab naye 'converted_capacity' field par filter lagao
+            $match: { converted_capacity: { $gt: 0 } }
+          }
+        ]);
+        // --- END UPDATE ---
+
         return {
           _id: agency._id,
           name: agency.agencyName,
@@ -680,43 +679,255 @@ app.get("/api/search-rides", async (req, res) => {
       })
     );
 
-    console.log("✅ agenciesWithVehicles:", agenciesWithVehicles.length);
-    // FIX #3: Send the array directly, not wrapped in an object
-    res.json(agenciesWithVehicles);
+    const agenciesWithAvailableVehicles = agenciesWithVehicles.filter(agency => agency.vehicles.length > 0);
+
+    if (!agenciesWithAvailableVehicles.length) {
+      return res.status(404).json({ message: "No agencies found with available vehicles for this station." });
+    }
+
+    res.json(agenciesWithAvailableVehicles);
 
   } catch (err) {
-    console.error("❌ Error while searching rides:", err);
-    res.status(500).json({ success: false, message: "Server error while searching rides." });
+    console.error("Search rides error:", err);
+    res.status(500).json({ message: "Server error" });
+    // body: JSON.stringify(finalBookingData)
   }
 });
 
 
 
+app.get("/api/matched-saved-rides", async (req, res) => {
+  console.log("===== SHARING RIDE SEARCH RECEIVED =====");
+  console.log(req.query);
+  console.log("======================================");
+  try {
+    // 1. Get new query parameters from User 2
+    // CHANGED: 'to' is now required again
+    const { from, to, date, time } = req.query;
+    if (!from || !to || !date || !time) { // 'to' re-added
+      return res.status(400).json({
+        success: false,
+        message: "'from', 'to', 'date', and 'time' queries are required."
+      });
+    }
+
+    // 2. Create case-insensitive regex for DB query
+    const fromRegex = new RegExp(`^${from.trim()}$`, "i");
+    // CHANGED: 'toRegex' re-added
+    const toRegex = new RegExp(`^${to.trim()}$`, "i");
+
+    // Parse User 2's desired departure time
+    let userDesiredDeparture;
+    try {
+      userDesiredDeparture = parseTime(date, time);
+    } catch (e) {
+      return res.status(400).json({ success: false, message: e.message });
+    }
+
+    // 20 minute ka buffer time (milliseconds mein)
+    const bufferTimeMs = 20 * 60 * 1000;
+    // User ke desired time se 20 min pehle ka time
+    const earliestAcceptableTime = new Date(userDesiredDeparture.getTime() - bufferTimeMs);
+
+    // 3. Initial DB query
+    const matchedCandidates = await Booking.find({
+      bookingType: "schedule_and_save",
+      status: "approved", // Sirf 'approved' status
+      date: date, // Filter by the exact date
+      // CHANGED: $all use karke 'from' aur 'to' dono check ho rahe hain
+      "stations.name": { $all: [fromRegex, toRegex] }
+    }).sort({ time: 1 }).limit(50);
+
+    if (!matchedCandidates.length) {
+      return res.json({ success: true, rides: [] }); // No candidates found
+    }
+
+    // 4. Post-processing: Filter candidates by station ORDER and TIME
+    const fromStationLower = from.trim().toLowerCase();
+    // CHANGED: 'toStationLower' re-added
+    const toStationLower = to.trim().toLowerCase();
+
+    const validMatches = matchedCandidates.filter(booking => {
+      try {
+        let fromIndex = -1;
+        // CHANGED: 'toIndex' re-added
+        let toIndex = -1;
+
+        // Find the indices of User 2's 'from' and 'to' stations
+        for (let i = 0; i < booking.stations.length; i++) {
+          const stationNameLower = booking.stations[i].name.toLowerCase();
+          if (stationNameLower === fromStationLower) {
+            fromIndex = i;
+          }
+          if (stationNameLower === toStationLower) {
+            toIndex = i;
+          }
+        }
+
+        // Check 1: Order must be correct ('from' must come before 'to')
+        // CHANGED: Order check re-added
+        if (fromIndex === -1 || toIndex === -1 || fromIndex >= toIndex) {
+          return false;
+        }
+
+        // Check 2: Time must be compatible (with 20 min buffer)
+        // Get the ride's *actual* departure time from User 2's 'from' station
+        const rideDepartureAtFrom = parseTime(booking.date, booking.stations[fromIndex].time);
+
+        // Ride ka departure time, user ke (desired time - 20 min) se
+        // baad ya barabar hona chahiye.
+        return rideDepartureAtFrom >= earliestAcceptableTime;
+
+      } catch (e) {
+        console.warn(`Error filtering booking ${booking.bookingId}:`, e.message);
+        return false;
+      }
+    });
+
+    // 5. Enrich the valid results (Yeh step same rahega)
+    const results = await Promise.all(validMatches.map(async (b) => {
+      let agency = null;
+      let vehicle = null;
+      try { agency = b.agencyId ? await Agencies.findById(b.agencyId).select("agencyName oprateStation email phone") : null; } catch (e) { }
+      try { vehicle = b.vehicleId ? await Vehicle.findById(b.vehicleId).select("vehicle_name vehicle_type model rate_per_km max_capacity") : null; } catch (e) { }
+      return {
+        bookingId: b.bookingId,
+        parentBookingId: b._id,
+        from: b.from,
+        to: b.to,
+        date: b.date,
+        time: b.time,
+        stations: b.stations,
+        agency: agency ? { id: agency._id, name: agency.agencyName, address: agency.oprateStation, phone: agency.phone } : null,
+        vehicle: vehicle,
+        postedBy: b.customerName || b.customerEmail || null,
+        status: b.status,
+        driverID: b.driverID || null,
+        driverName: b.driverName || null
+      };
+    }));
+
+    res.json({ success: true, rides: results });
+  } catch (err) {
+    console.error("Error fetching matched saved rides:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// ====== Join a saved ride (create a join request referencing parent saved ride) ======
+app.post("/api/join-saved-ride", async (req, res) => {
+  try {
+    if (!req.session.user) return res.status(401).json({ success: false, message: "Not logged in" });
+
+    const { parentBookingId, pickupAddress, area, city, userFrom, userTo, userDistance, calculatedFare } = req.body;
+    if (!parentBookingId || !pickupAddress) return res.status(400).json({ success: false, message: "Missing required fields" });
+
+    const parent = await Booking.findById(parentBookingId);
+    if (!parent) return res.status(404).json({ success: false, message: "Parent saved ride not found" });
+
+    // create a new booking as a join request. keep reference to parent
+    const bookingId = await getNextBookingId();
+
+    const newBooking = new Booking({
+      bookingId,
+      parentBookingId: parent._id,
+      from: userFrom || parent.from,
+      to: userTo || parent.to,
+      pickupAddress,
+      bookingType: "join_request",
+      date: parent.date,
+      time: formatTime(new Date()),
+      area: area || "",
+      city: city || "",
+      customerName: req.session.user.name,
+      customerEmail: req.session.user.email,
+      mobile: req.session.user.phone,
+      stations: parent.stations, // copy for visibility
+      totalDistance: parseFloat(userDistance) || parent.totalDistance, // Save user's distance, fallback to parent's
+      agencyId: parent.agencyId, // <-- Copied from parent
+      vehicleId: parent.vehicleId,
+      driverID: parent.driverID, // <-- Yeh line add karein
+      driverName: parent.driverName,
+      fare: parseFloat(calculatedFare) || 0, // Send the calculated fare
+      status: parent.status
+    });
+
+    await newBooking.save();
+
+    // optionally notify agency or ride owner via email (basic example)
+    if (parent.agencyId) {
+      try {
+        const agency = await Agencies.findById(parent.agencyId);
+        if (agency && agency.email) {
+          await transporter.sendMail({
+            from: 'sharingyatra@gmail.com',
+            to: agency.email,
+            subject: `New join request for ${parent.bookingId}`,
+            text: `User ${req.session.user.name || req.session.user.email} requested to join ride ${parent.bookingId} on ${parent.date} ${parent.time}. BookingId: ${bookingId}`
+          });
+        }
+      } catch (mailErr) {
+        console.warn("Could not send join notification email:", mailErr);
+      }
+    }
+
+    res.status(201).json({ success: true, message: "Join request sent", bookingId: newBooking.bookingId });
+  } catch (err) {
+    console.error("Join saved ride error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// --- API: Fetch Recent Bookings for Current User ---
+app.get("/api/recent-bookings", async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.status(401).json({ success: false, message: "Not logged in" });
+    }
+
+    const { email: customerEmail, name: customerName } = req.session.user;
+
+    const bookings = await Booking.find({ customerEmail })
+      .sort({ date: -1, time: -1 }) // latest first
+      .limit(5)
+      .lean();
+
+    res.json({ success: true, customerName, bookings });
+  } catch (err) {
+    console.error("Error fetching bookings:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+// ====== Booking API ======
 // ====== Booking API ======
 app.post("/api/bookings", async (req, res) => {
   try {
-    // CORRECTED: The original 'if (!req.session.user)' check was commented out. It's good practice to keep it.
+    // 1. Check if user is logged in
     if (!req.session.user) {
       return res.status(401).json({ message: "Not logged in" });
     }
 
+    // 2. Get all data from request body
     let {
       from, to, pickupAddress, bookingType, date, time, area, city,
       agencyId, vehicleId, fare, totalDistance
     } = req.body;
 
-    // --- CRITICAL FIX from your code: Handle Express Connect ---
+    // 3. Handle Express Connect time
     if (bookingType === 'express_connect') {
       const now = new Date();
       date = date || now.toISOString().split('T')[0];
       time = time || `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     }
 
+    // 4. Validation
     if (!from || !to || !pickupAddress || !date || !time || !area || !city || !agencyId || !vehicleId) {
       return res.status(400).json({ success: false, message: "Missing required booking details." });
     }
 
-    // The RailGraph logic for calculating final route details remains
+    // 5. RailGraph logic (Aapka purana code)
     const shortestPathResult = railGraph.shortestPath(from, to);
     if (!shortestPathResult.found) {
       return res.status(400).json({ success: false, message: "No route found." });
@@ -725,45 +936,77 @@ app.post("/api/bookings", async (req, res) => {
       shortestPathResult.path, time, date
     );
 
+    // =======================================================
+    // 6. DRIVER LOGIC (Jo humne add kiya hai)
+    // =======================================================
+    // 6a. Vehicle ko uski ID se dhoondho
+    const vehicle = await Vehicle.findById(vehicleId);
+    if (!vehicle) {
+      return res.status(404).json({ success: false, message: "Vehicle not found." });
+    }
+    if (!vehicle.assignedDriver) {
+      return res.status(400).json({
+        success: false,
+        message: "This vehicle has no driver assigned."
+      });
+    }
+
+    // 6b. Ab 'assignedDriver' ID se Driver ko dhoondho
+    const driver = await Driver.findById(vehicle.assignedDriver);
+    if (!driver) {
+      return res.status(404).json({
+        success: false,
+        message: "Assigned driver details not found."
+      });
+    }
+    // Ab 'driver' variable mein driverId aur fullName dono hain
+    // =======================================================
+
+    // 7. Get user details from session
     const customerName = req.session.user.name;
     const customerEmail = req.session.user.email;
     const mobile = req.session.user.phone;
     const bookingId = await getNextBookingId();
 
+    // 8. Create the new Booking object (SABHI FIELDS KE SAATH)
     const booking = new Booking({
       bookingId,
       from,
       to,
-      pickupAddress,
-      bookingType,
-      date,
-      time,
-      area,
-      city,
-      customerName,
-      customerEmail,
-      mobile,
-      stations: stationsInPath,
-      totalDistance: parseFloat(totalDistance) || parseFloat(totalPhysicalDistance.toFixed(2)),
+      pickupAddress,    // <-- Yeh sab aapke code mein missing tha
+      bookingType,      // <--
+      date,             // <--
+      time: formatTime(new Date()), // <--
+      area,             // <--
+      city,             // <--
+      customerName,     // <--
+      customerEmail,    // <--
+      mobile,           // <--
+      stations: stationsInPath, // <--
+      totalDistance: parseFloat(totalDistance) || parseFloat(totalPhysicalDistance.toFixed(2)), // <--
       agencyId,
       vehicleId,
-      fare,
-      status: "pending"
+      fare: parseFloat(fare) || 0,
+      status: "pending",
+      driverID: driver._id,       // <-- Driver ID
+      driverName: driver.fullName // <-- Driver Name
     });
 
+    // 9. Save to database
     await booking.save();
 
+    // 10. Send success response
     res.status(201).json({
       success: true,
       bookingId: booking.bookingId,
       message: "Booking request sent successfully"
     });
+
   } catch (err) {
     console.error("Booking error:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
-
 
 
 const PORT = process.env.PORT || 5000;

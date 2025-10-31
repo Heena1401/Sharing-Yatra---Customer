@@ -8,30 +8,42 @@ const bookingSchema = new mongoose.Schema({
   from: { type: String, required: true },
   to: { type: String, required: true },
   pickupAddress: { type: String, required: true },
-  area: { type: String }, 
-  city: { type: String }, 
+  area: { type: String },
+  city: { type: String },
   bookingType: { type: String, required: true },
-  date: { type: String, required: true },  
-  time: { type: String, required: true }, 
+  date: { type: String, required: true },
+  time: { type: String, required: true },
   stations: [
     {
       name: { type: String, required: true },
-      time: { type: String, required: true }  
+      time: { type: String, required: true }
     }
   ],
   totalDistance: { type: Number, required: true },
-agencyId: {
-        type: mongoose.Schema.Types.ObjectId, // This is the correct type for an ID
-        ref: 'Agencies', // This links it to your Agencies model
-        required: true
-    },
-    vehicleId: {
-        type: mongoose.Schema.Types.ObjectId, // This is the correct type for an ID
-        ref: 'Vehicle', // This links it to your Vehicle model
-        required: true
-    },
-Fare:{ type: String},
-  status: { type: String, default: "Pending" }
+  agencyId: {
+    type: mongoose.Schema.Types.ObjectId, // This is the correct type for an ID
+    ref: 'Agencies', // This links it to your Agencies model
+    required: true
+  },
+  vehicleId: {
+    type: mongoose.Schema.Types.ObjectId, // This is the correct type for an ID
+    ref: 'Vehicle', // This links it to your Vehicle model
+    required: true
+  },
+  parentBookingId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Booking',
+    required: false
+  },
+  fare: { type: Number },
+  status: { type: String, default: "Pending" },
+  driverID: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Driver' // Yahaan 'Driver' model ka naam daalein
+  },
+  driverName: {
+    type: String
+  },
 });
 
 module.exports = mongoose.model("Booking", bookingSchema);

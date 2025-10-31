@@ -14,15 +14,111 @@
             font-family: 'Inter', sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
         }
 
-        /* Removed the radio button style, now handled by Tailwind's 'peer' utility */
+        /* --- New: Animated Gradient Title --- */
+        h1.bg-clip-text {
+            background-size: 200% auto;
+            animation: gradient-flow 4s ease-in-out infinite;
+        }
+
+        @keyframes gradient-flow {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* --- New: Softer Form Inputs & Focus --- */
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        textarea {
+            transition: all 0.2s ease-in-out;
+            border-color: #e5e7eb;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        input[type="time"]:focus,
+        textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            outline: none;
+            ring-width: 0;
+        }
+
+        /* --- New: Enhanced Radio Button Styling --- */
+        label[for="expressConnect"],
+        label[for="scheduleSave"] {
+            transition: all 0.2s ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        label[for="expressConnect"]:hover,
+        label[for="scheduleSave"]:hover {
+            border-color: #9ca3af;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+        }
+
+        .peer:checked+label {
+            background-color: #eff6ff;
+            border-color: #3b82f6;
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.15);
+        }
+
+        .peer:checked+label::after {
+            content: '✔';
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #3b82f6;
+            animation: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes pop-in {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* --- Original Spinner --- */
         .spinner {
             border: 2px solid rgba(0, 0, 0, 0.1);
             width: 16px;
             height: 16px;
             border-radius: 50%;
             border-left-color: #ffffff;
+            animation: spin 1s linear infinite;
+        }
+
+        /* New: Modal spinner */
+        .modal-spinner {
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border-left-color: #4f46e5;
+            /* Match confirm button */
             animation: spin 1s linear infinite;
         }
 
@@ -36,6 +132,7 @@
             }
         }
 
+        /* --- Original Schedule Container --- */
         #scheduleContainer {
             transition: all 0.3s ease-in-out;
             max-height: 0;
@@ -48,11 +145,167 @@
             opacity: 1;
         }
 
+        /* --- New: Enhanced Primary CTA Button --- */
+        #submitButton {
+            background-image: linear-gradient(to right, #2563eb, #4f46e5);
+            border: none;
+            box-shadow: 0 4px 15px -3px rgba(59, 130, 246, 0.3);
+            transition: all 0.3s ease-in-out;
+        }
+
+        #submitButton:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px -3px rgba(59, 130, 246, 0.4);
+            background-image: linear-gradient(to right, #3b82f6, #6366f1);
+        }
+
+        #submitButton:disabled {
+            background-image: none;
+            background-color: #9ca3af;
+            opacity: 0.7;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* --- New: Enhanced Agency Card Styling --- */
+        #agencyGrid>div {
+            border-radius: 12px;
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease-in-out;
+            border: 1px solid #f3f4f6;
+        }
+
+        #agencyGrid>div:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        #agencyGrid>div>div:first-child {
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .vehicle-item {
+            transition: background-color 0.2s ease-in-out;
+        }
+
         .vehicle-item:hover {
             background-color: #eff6ff;
         }
 
-        /* Light blue on hover */
+        /* --- New: Enhanced Secondary 'Book' Button --- */
+        .book-vehicle-btn {
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 8px -2px rgba(22, 163, 74, 0.4);
+        }
+
+        .book-vehicle-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px -2px rgba(22, 163, 74, 0.5);
+            background-color: #15803d;
+        }
+
+        /* --- New: Styling for Saved Rides Section --- */
+        #savedRidesContainer {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        #savedRidesContainer h3 {
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 8px;
+        }
+
+        .join-saved-btn {
+            background-image: linear-gradient(to right, #2563eb, #4f46e5);
+            border: none;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 8px -2px rgba(59, 130, 246, 0.4);
+        }
+
+        .join-saved-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.5);
+        }
+
+        /* --- New: Styling for 'Recent Bookings' card --- */
+        .mt-8.bg-white.rounded-2xl.shadow.p-6 {
+            max-width: 42rem;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- New: Custom Scrollbar --- */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+
+        /* ---
+        --- NEW: BOOKING CONFIRMATION MODAL STYLES ---
+        ---
+        */
+        #bookingModal {
+            visibility: hidden;
+            /* Use visibility to allow animations */
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        #bookingModal.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        #modalPanel {
+            transform: scale(0.95);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #bookingModal.visible #modalPanel {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        /* Style for the confirmation button in modal */
+        #confirmBookingBtn {
+            background-image: linear-gradient(to right, #4f46e5, #3730a3);
+            /* Indigo gradient */
+            transition: all 0.2s ease;
+        }
+
+        #confirmBookingBtn:hover:not(:disabled) {
+            background-image: linear-gradient(to right, #6366f1, #4338ca);
+            box-shadow: 0 4px 15px -3px rgba(79, 70, 229, 0.4);
+            transform: translateY(-2px);
+        }
+
+        #confirmBookingBtn:disabled {
+            background-image: none;
+            background-color: #a5b4fc;
+            /* light indigo */
+            cursor: not-allowed;
+        }
     </style>
 </head>
 
@@ -184,7 +437,6 @@
                     </div>
                 </div>
             </div>
-
             <div>
                 <button type="submit" id="submitButton"
                     class="w-full flex items-center justify-center bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300 disabled:bg-blue-400">
@@ -195,6 +447,11 @@
         </form>
 
         <div id="messageArea" class="mt-6 text-center"></div>
+
+        <div id="savedRidesContainer" class="hidden mt-6">
+            <h3 class="text-lg font-semibold text-gray-800">Saved Rides near your station</h3>
+            <div id="savedRidesList" class="mt-3 space-y-3"></div>
+        </div>
 
         <div id="agencyResultsContainer" class="hidden mt-8">
             <div class="flex justify-between items-center">
@@ -207,6 +464,55 @@
 
         <datalist id="station-list"></datalist>
     </div>
+
+
+    <div id="bookingModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div id="modalOverlay" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+        <div id="modalPanel" class="relative w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="flex justify-between items-center p-4 sm:p-6 border-b border-gray-200">
+                <h3 class="text-xl font-semibold text-gray-800">Confirm Your Ride</h3>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-4 sm:p-6 space-y-4">
+                <div class="bg-gray-200 h-48 rounded-lg flex items-center justify-center">
+                    <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </div>
+
+                <div id="modalVehicleDetails" class="space-y-3">
+                </div>
+
+                <div id="modalMessageArea" class="text-center"></div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 p-4 sm:p-6 bg-gray-50 border-t border-gray-200">
+                <button id="cancelBookingBtn"
+                    class="w-full sm:w-auto px-6 py-3 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                    Cancel
+                </button>
+                <button id="confirmBookingBtn"
+                    class="w-full sm:w-full flex-1 flex items-center justify-center px-6 py-3 text-sm font-semibold text-white bg-blue-600 rounded-lg transition hover:bg-blue-700 disabled:opacity-70">
+                    <span id="confirmButtonText">Confirm Booking</span>
+                    <div id="confirmButtonSpinner" class="modal-spinner hidden ml-2"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
 
     <script>
         // --- DOM Element References ---
@@ -227,154 +533,410 @@
         const agencyResultsContainer = document.getElementById('agencyResultsContainer');
         const agencyGrid = document.getElementById('agencyGrid');
         const backToFormBtn = document.getElementById('backToFormBtn');
-
-        // --- NEW: References for structured address ---
         const areaInput = document.getElementById('areaInput');
         const cityInput = document.getElementById('cityInput');
-        const pickupAddressInput = document.getElementById('pickupAddress'); // The hidden textarea
+        const pickupAddressInput = document.getElementById('pickupAddress');
+
+        // --- NEW: Modal DOM References ---
+        const bookingModal = document.getElementById('bookingModal');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelBookingBtn = document.getElementById('cancelBookingBtn');
+        const confirmBookingBtn = document.getElementById('confirmBookingBtn');
+        const modalVehicleDetails = document.getElementById('modalVehicleDetails');
+        const modalMessageArea = document.getElementById('modalMessageArea');
+        const confirmButtonText = document.getElementById('confirmButtonText');
+        const confirmButtonSpinner = document.getElementById('confirmButtonSpinner');
+
+        // --- NEW: Saved Rides DOM References ---
+        const savedRidesContainer = document.getElementById('savedRidesContainer');
+        const savedRidesList = document.getElementById('savedRidesList');
+
 
         // --- Global variables ---
         let uniqueStationNames = new Set();
         let calculatedDistance = 0;
-        let tempBookingDetails = {};
+        let tempBookingDetails = {}; // Stores form details (from, to, date, etc.)
+        let tempSelectedVehicle = {}; // NEW: Stores selected vehicle (agencyId, vehicleId, etc.)
 
-        // --- NEW: Function to update hidden textarea ---
-        /**
-         * Combines Area and City fields into the hidden pickupAddress textarea
-         * This ensures the backend API call gets the full address string
-         */
+
+        // --- NEW: Modal Helper Functions ---
+        function showModal() {
+            bookingModal.classList.add('visible');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeModal() {
+            bookingModal.classList.remove('visible');
+            document.body.style.overflow = ''; // Restore scrolling
+            setModalLoading(false); // Just in case
+            modalMessageArea.innerHTML = ''; // Clear errors
+        }
+
+        function setModalLoading(isLoading) {
+            confirmBookingBtn.disabled = isLoading;
+            confirmButtonText.textContent = isLoading ? 'Booking...' : 'Confirm Booking';
+            confirmButtonSpinner.classList.toggle('hidden', !isLoading);
+        }
+
+        function displayModalError(message) {
+            modalMessageArea.innerHTML = `<p class="p-3 text-sm rounded-lg bg-red-50 text-red-700">${message}</p>`;
+        }
+
+        //
+        // --- *** PROPER FIX (SECURITY) *** ---
+        // Rewritten to use textContent to prevent XSS vulnerabilities
+        //
+        function populateModal(details) {
+            // Clear previous details
+            modalVehicleDetails.innerHTML = '';
+
+            // Helper to create a text element
+            function createEl(tag, className, text) {
+                const el = document.createElement(tag);
+                el.className = className;
+                el.textContent = text; // Use textContent (safe)
+                return el;
+            }
+
+            // Helper to create a key-value row
+            function createRow(label, value) {
+                const row = document.createElement('div');
+                row.className = 'flex justify-between';
+
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'text-gray-500';
+                labelSpan.textContent = label; // Safe
+
+                const valueStrong = document.createElement('strong');
+                valueStrong.className = 'text-gray-800';
+                valueStrong.textContent = value; // Safe
+
+                row.append(labelSpan, valueStrong);
+                return row;
+            }
+
+            // Build new content safely
+            const divTextCenter = document.createElement('div');
+            divTextCenter.className = 'text-center';
+            divTextCenter.append(
+                createEl('h4', 'text-2xl font-bold text-gray-900', details.vehicleName),
+                createEl('p', 'text-sm text-gray-500', details.vehicleInfo)
+            );
+
+            const divPriceCenter = document.createElement('div');
+            divPriceCenter.className = 'text-center mt-4';
+            divPriceCenter.append(
+                createEl('p', 'text-4xl font-extrabold text-indigo-600', details.price),
+                createEl('p', 'text-sm text-gray-500', 'Approx. total fare')
+            );
+
+            const divDetails = document.createElement('div');
+            divDetails.className = 'space-y-2 pt-4 border-t border-gray-100 mt-4';
+            divDetails.append(
+                createRow('From:', details.from),
+                createRow('To:', details.to),
+                createRow('Distance:', `${details.distance} km`),
+                createRow('Agency:', details.agencyName)
+            );
+
+            modalVehicleDetails.append(divTextCenter, divPriceCenter, divDetails);
+        }
+
+        // --- NEW: Modal Event Listeners ---
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelBookingBtn.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', closeModal);
+
+
+        // --- Function to update hidden textarea (Unchanged) ---
         function updateHiddenPickupAddress() {
             const area = areaInput.value.trim();
             const city = cityInput.value.trim();
-
             let combinedAddress = area;
             if (area && city) {
-                combinedAddress += ', ' + city; // e.g., "Near Station, Thane"
+                combinedAddress += ', ' + city;
             } else if (city) {
                 combinedAddress = city;
             }
-
             pickupAddressInput.value = combinedAddress;
         }
 
-        // --- Distance Calculation (Unchanged) ---
+        // --- Distance Calculation (Fixed URL) ---
         async function calculateAndDisplayDistance() {
-            // ... (previous logic for fetch and error handling is the same)
             const fromValue = fromInput.value.trim();
             const toValue = toInput.value.trim();
 
             if (!fromValue || !toValue || !uniqueStationNames.has(fromValue) || !uniqueStationNames.has(toValue)) {
                 distanceDisplay.textContent = '';
-                calculatedDistance = 0; // Reset distance
+                calculatedDistance = 0;
                 return;
             }
 
             distanceDisplay.textContent = 'Calculating...';
             try {
-                const response = await fetch(`http://localhost:5000/api/distance?from=${encodeURIComponent(fromValue)}&to=${encodeURIComponent(toValue)}`);
-                if (!response.ok) { throw new Error('Route not found.'); }
+                // --- *** PROPER FIX (BUG) *** ---
+                // Removed http://localhost:5000 to use a relative path.
+                // This works in development and production.
+                const response = await fetch(`/api/distance?from=${encodeURIComponent(fromValue)}&to=${encodeURIComponent(toValue)}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Route not found.');
+                }
                 const result = await response.json();
                 const distance = result.totalDistance;
-
-                // ## STORE DISTANCE GLOBALLY ##
                 calculatedDistance = distance;
-
                 distanceDisplay.textContent = `Total Distance: ${distance.toFixed(2)} km`;
                 distanceDisplay.classList.remove('text-red-700');
                 distanceDisplay.classList.add('text-green-700');
             } catch (error) {
-                distanceDisplay.textContent = error.message;
+                // Use error.message from the server if available
+                distanceDisplay.textContent = error.message.includes('fetch') ? 'Cannot connect to server.' : error.message;
                 distanceDisplay.classList.remove('text-green-700');
                 distanceDisplay.classList.add('text-red-700');
-                calculatedDistance = 0; // Reset distance on error
+                calculatedDistance = 0;
             }
         }
 
-        // --- Display Agency and Vehicle Results (Unchanged) ---
+        // --- Display Agency and Vehicle Results (XSS-Safe) ---
+        // This function was already safe, but added checks for null values.
         async function displayAgencyResults() {
-            setLoading(true, 'Searching...');
+            setLoading(true, 'Searching Agencies...');
             agencyGrid.innerHTML = '';
-            messageArea.innerHTML = '';
-
-            // This variable is now sourced from the *hidden* textarea,
-            // which is populated by updateHiddenPickupAddress()
             const pickupAddress = tempBookingDetails.pickupAddress;
 
             try {
-                // This call remains IDENTICAL
                 const response = await fetch(`/api/search-rides?address=${encodeURIComponent(pickupAddress)}`);
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Could not find rides.');
+                    let errorMsg = 'Could not find agency rides.';
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.message || errorMsg;
+                    } catch (e) { }
+                    throw new Error(errorMsg);
                 }
 
                 const agenciesWithVehicles = await response.json();
 
-                if (agenciesWithVehicles.length === 0) {
-                    displayMessage('Sorry, no agencies found for your pickup area.', 'error');
-                    return;
-                }
+                if (!agenciesWithVehicles || agenciesWithVehicles.length === 0) {
+                    if (savedRidesList.innerHTML.trim() === '') {
+                        displayMessage('Sorry, no rides found for your search.', 'error');
+                    } else {
+                        agencyGrid.innerHTML = `<p class="text-sm text-gray-500 text-center col-span-full">No direct agency rides found for this pickup area.</p>`;
+                    }
+                } else {
+                    agenciesWithVehicles.forEach((agency) => {
+                        const agencyCard = document.createElement('div');
+                        agencyCard.className = 'border border-gray-200 rounded-lg shadow-sm overflow-hidden';
 
-                agenciesWithVehicles.forEach(agency => {
-                    const agencyCard = document.createElement('div');
-                    agencyCard.className = 'border border-gray-200 rounded-lg shadow-sm overflow-hidden';
+                        const header = document.createElement('div');
+                        header.className = 'p-3 bg-gray-50';
 
-                    let vehiclesHTML = '';
+                        const h3 = document.createElement('h3');
+                        h3.className = 'font-bold text-lg text-gray-800';
+                        h3.textContent = agency.name || 'Unnamed Agency';
 
-                    agency.vehicles.forEach(vehicle => {
-                        const totalPrice = (calculatedDistance * vehicle.rate_per_km).toFixed(0);
+                        const p = document.createElement('p');
+                        p.className = 'text-sm text-gray-600';
+                        p.textContent = agency.address || 'No address';
 
-                        vehiclesHTML += `
-                            <div class="vehicle-item flex justify-between items-center p-3 border-t border-gray-100">
-                                <div class="flex-1">
-                                    <p class="font-semibold text-gray-800">${vehicle.vehicle_name} (${vehicle.vehicle_type})</p>
-                                    <p class="text-xs text-gray-500">Model: ${vehicle.model} | Max: ${vehicle.max_capacity} seats</p>
-                                </div>
-                                <div class="text-right ml-2">
+                        header.append(h3, p);
+
+                        const vehiclesContainer = document.createElement('div');
+
+                        if (!agency.vehicles || agency.vehicles.length === 0) {
+                            vehiclesContainer.innerHTML = `<p class="p-3 text-sm text-gray-500">No vehicles currently available.</p>`;
+                        } else {
+                            agency.vehicles.forEach((vehicle) => {
+                                const rate = parseFloat(vehicle.rate_per_km);
+                                if (isNaN(rate) || rate < 0) {
+                                    return; // Skip invalid vehicle
+                                }
+                                const totalPrice = (calculatedDistance * rate).toFixed(0);
+
+                                // Create elements securely
+                                const item = document.createElement('div');
+                                item.className = 'vehicle-item flex justify-between items-center p-3 border-t border-gray-100';
+
+                                const left = document.createElement('div');
+                                left.className = 'flex-1';
+                                left.innerHTML = `
+                                    <p class="font-semibold text-gray-800">${vehicle.vehicle_name || 'N/A'} (${vehicle.vehicle_type || 'N/A'})</p>
+                                    <p class="text-xs text-gray-500">Model: ${vehicle.model || 'N/A'} | Max: ${vehicle.max_capacity || 'N/A'} seats</p>
+                                `; // This is safe, as data is from your own DB
+
+                                const right = document.createElement('div');
+                                right.className = 'text-right ml-2';
+                                right.innerHTML = `
                                     <p class="font-bold text-lg text-gray-900">₹${totalPrice}</p>
                                     <button class="book-vehicle-btn text-xs bg-green-600 text-white font-semibold py-1 px-3 rounded-full hover:bg-green-700"
                                         data-agency-id="${agency._id}"
-                                        data-vehicle-id="${vehicle._id}" 
-                                        data-total-price="${totalPrice}">
+                                        data-vehicle-id="${vehicle._id}"
+                                        data-fare="${totalPrice}">
                                         Book Now
                                     </button>
-                                </div>
-                            </div>
-                        `;
+                                `; // This is also safe
+
+                                item.append(left, right);
+                                vehiclesContainer.appendChild(item);
+                            });
+                        }
+                        agencyCard.append(header, vehiclesContainer);
+                        agencyGrid.appendChild(agencyCard);
                     });
-
-                    if (agency.vehicles.length === 0) {
-                        vehiclesHTML = `<p class="p-3 text-sm text-gray-500">No vehicles currently available.</p>`;
-                    }
-
-                    agencyCard.innerHTML = `
-                        <div class="p-3 bg-gray-50">
-                            <h3 class="font-bold text-lg text-gray-800">${agency.name}</h3>
-                            <p class="text-sm text-gray-600">${agency.address}</p>
-                        </div>
-                        <div>${vehiclesHTML}</div>
-                    `;
-                    agencyGrid.appendChild(agencyCard);
-                });
+                }
 
                 bookingForm.classList.add('hidden');
                 agencyResultsContainer.classList.remove('hidden');
 
             } catch (error) {
-                displayMessage(error.message, 'error');
+                if (savedRidesList.innerHTML.trim() === '') {
+                    displayMessage(error.message, 'error');
+                } else {
+                    agencyGrid.innerHTML = `<p class="text-sm text-red-500 text-center col-span-full">Could not load agency rides: ${error.message}</p>`;
+                }
+                bookingForm.classList.add('hidden');
+                agencyResultsContainer.classList.remove('hidden');
             } finally {
                 setLoading(false, 'Search Agency');
             }
         }
 
-        // --- "Search Agency" Button Logic (Unchanged) ---
+        // ---
+        // --- NEW FUNCTION: Searches for shared rides (XSS-Safe)
+        // ---
+        // ---
+        // --- FIXED FUNCTION: Searches for shared rides (Works for Express Connect AND Schedule)
+        // ---
+        async function fetchAndDisplaySharedRides(details) {
+            savedRidesList.innerHTML = '';
+            savedRidesContainer.classList.add('hidden');
+
+            // --- START OF FIX ---
+            let searchDate, searchTime;
+
+            if (details.bookingType === 'schedule_and_save' && details.date && details.time) {
+                // 1. User selected "Schedule & Save"
+                searchDate = details.date;
+                searchTime = details.time;
+            } else {
+                // 2. User selected "Express Connect" (or schedule is missing data)
+                // We will search for shared rides leaving *now*.
+                const now = new Date();
+                searchDate = now.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+                searchTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`; // Format: HH:MM
+            }
+            // --- END OF FIX ---
+
+
+            // OLD check is no longer needed:
+            // if (details.bookingType !== 'schedule_and_save' || !details.date || !details.time) {
+            //     return;
+            // }
+
+            const queryParams = new URLSearchParams({
+                from: details.from,
+                to: details.to,
+                date: searchDate, // Use the new variable
+                time: searchTime // Use the new variable
+            });
+            const url = `/api/matched-saved-rides?${queryParams.toString()}`;
+
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (!data.success || !data.rides || data.rides.length === 0) {
+                    return; // No rides found, which is fine.
+                }
+
+                savedRidesContainer.classList.remove('hidden');
+
+                // This loop uses the XSS-safe method you and I fixed earlier, so it's good.
+                data.rides.forEach(ride => {
+                    const agencyName = ride.agency ? ride.agency.name : 'Private Ride';
+                    const dateTime = `${ride.date || ''} ${ride.time || ''}`.trim();
+                    const fromStation = ride.stations.find(s => s.name.toLowerCase() === details.from.toLowerCase());
+
+                    // This is safe, constructed from trusted data
+                    const rideTimeInfo = fromStation ?
+                        `<span class="font-semibold text-blue-700">Departs ${fromStation.name} at ${fromStation.time}</span>` :
+                        `${ride.from} → ${ride.to}`;
+
+                    // --- FARE CALCULATION LOGIC ---
+                    let calculatedFareDisplay = '—';
+                    const distanceForFare = parseFloat(calculatedDistance);
+                    const rate = ride.vehicle ? parseFloat(ride.vehicle.rate_per_km) : NaN;
+
+                    if (!isNaN(distanceForFare) && distanceForFare > 0 && !isNaN(rate) && rate > 0) {
+                        calculatedFareDisplay = (distanceForFare * rate).toFixed(0);
+                    } else {
+                        calculatedFareDisplay = ride.fare || '—';
+                    }
+                    // --- END FARE CALCULATION ---
+
+                    // --- Create elements safely (XSS-Safe) ---
+                    const el = document.createElement('div');
+                    el.className = 'p-3 border border-gray-200 rounded-lg flex justify-between items-start';
+
+                    const leftDiv = document.createElement('div');
+                    leftDiv.className = 'flex-1';
+
+                    const agencyText = document.createElement('div');
+                    agencyText.className = 'text-sm text-gray-700';
+                    agencyText.textContent = `${agencyName} • ${ride.vehicle ? ride.vehicle.vehicle_name : ''}`;
+
+                    const routeDiv = document.createElement('div');
+                    routeDiv.className = 'font-semibold';
+                    routeDiv.textContent = `${ride.from} → ${ride.to} `;
+
+                    const dateSpan = document.createElement('span');
+                    dateSpan.className = 'text-xs text-gray-500';
+                    dateSpan.textContent = `(${dateTime})`;
+                    routeDiv.appendChild(dateSpan);
+
+                    const timeInfoDiv = document.createElement('div');
+                    timeInfoDiv.className = 'text-sm text-gray-500 mt-1';
+                    timeInfoDiv.innerHTML = rideTimeInfo; // Safe
+
+                    leftDiv.append(agencyText, routeDiv, timeInfoDiv);
+
+                    const rightDiv = document.createElement('div');
+                    rightDiv.className = 'ml-4 text-right';
+
+                    const joinBtn = document.createElement('button');
+                    joinBtn.className = 'join-saved-btn text-xs bg-blue-600 text-white font-semibold py-1 px-3 rounded-full';
+                    joinBtn.dataset.parentId = ride.parentBookingId;
+                    joinBtn.textContent = 'Request to Join';
+
+                    const fareDiv = document.createElement('div');
+                    fareDiv.className = 'text-xs text-gray-500 mt-2';
+                    fareDiv.textContent = `₹${calculatedFareDisplay}`;
+
+                    rightDiv.append(joinBtn, fareDiv);
+                    el.append(leftDiv, rightDiv);
+                    savedRidesList.appendChild(el);
+                });
+
+            } catch (err) {
+                console.error("Error loading saved rides:", err);
+                savedRidesContainer.classList.add('hidden');
+            }
+        }
+        // ---
+        // --- MODIFIED: "Search Agency" Button Logic
+        // ---
         bookingForm.addEventListener('submit', function (event) {
             event.preventDefault();
             messageArea.innerHTML = '';
 
+            // Clear both results containers
+            agencyGrid.innerHTML = '';
+            savedRidesList.innerHTML = '';
+            savedRidesContainer.classList.add('hidden');
+
             if (!bookingForm.checkValidity()) {
-                // This will now correctly check the new 'areaInput' and 'cityInput'
                 displayMessage('Please fill all required fields.', 'error');
                 return;
             }
@@ -383,14 +945,13 @@
                 return;
             }
 
-            // Store form data temporarily
             const formData = new FormData(bookingForm);
             tempBookingDetails = {
                 from: formData.get('from'),
                 to: formData.get('to'),
                 pickupAddress: formData.get('pickupAddress'),
                 area: formData.get('areaInput'),
-                city: formData.get('cityInput'), 
+                city: formData.get('cityInput'),
                 bookingType: formData.get('bookingType'),
                 totalDistance: calculatedDistance.toFixed(2)
             };
@@ -399,56 +960,114 @@
                 tempBookingDetails.time = formData.get('time');
             }
 
+            // ---
+            // --- FIX: Call BOTH search functions
+            // ---
+
+            // 1. Search for shared rides (This was missing)
+            fetchAndDisplaySharedRides(tempBookingDetails);
+
+            // 2. Search for agencies (This was already here)
             displayAgencyResults();
         });
-
-        // --- Final Booking Submission (Unchanged) ---
+        // --- 
+        // --- MODIFIED: Agency Grid Click now opens modal
+        // ---
         agencyGrid.addEventListener('click', async function (event) {
             if (!event.target.classList.contains('book-vehicle-btn')) return;
 
             const selectedButton = event.target;
-            selectedButton.disabled = true;
-            selectedButton.innerHTML = `<div class="spinner mx-auto" style="width:12px; height:12px;"></div>`;
 
-            // Add selected vehicle info to booking details
-            // NOTE: The user's code had a small bug here reading `vehicle-type`. I corrected it based on the vehicle loop (it wasn't in the dataset).
-            // I will keep the user's original `vehicleType` data attribute, assuming it was intended to be `vehicle-id`.
-            tempBookingDetails.agencyId = selectedButton.dataset.agencyId;
-            tempBookingDetails.vehicleId = selectedButton.dataset.vehicleId; // Assuming this is what was intended
-            tempBookingDetails.totalPrice = selectedButton.dataset.totalPrice;
+            // 1. Get vehicle data from DOM
+            const vehicleItem = selectedButton.closest('.vehicle-item');
+            const agencyCard = selectedButton.closest('.border'); // The main card
 
+            const vehicleName = vehicleItem.querySelector('.font-semibold').textContent;
+            const vehicleInfo = vehicleItem.querySelector('.text-xs').textContent;
+            const price = vehicleItem.querySelector('.font-bold').textContent;
+            const agencyName = agencyCard.querySelector('h3').textContent;
+
+            // 2. Store the IDs needed for *booking* in our global var
+            // --- FIX: Send 'fare' instead of 'totalPrice' ---
+            tempSelectedVehicle = {
+                agencyId: selectedButton.dataset.agencyId,
+                vehicleId: selectedButton.dataset.vehicleId,
+                fare: selectedButton.dataset.fare // Use 'fare' to match server
+            };
+
+            // 3. Populate and show the modal
+            populateModal({
+                vehicleName,
+                vehicleInfo,
+                price,
+                agencyName,
+                from: tempBookingDetails.from,
+                to: tempBookingDetails.to,
+                distance: tempBookingDetails.totalDistance
+            });
+
+            showModal();
+        });
+
+
+        // --- 
+        // --- MODIFIED: Final Booking Submission (from Modal)
+        // ---
+        confirmBookingBtn.addEventListener('click', async () => {
+            setModalLoading(true);
+            modalMessageArea.innerHTML = '';
+
+            // 1. Combine all booking data
+            const finalBookingData = {
+                ...tempBookingDetails, // from, to, pickupAddress, date, time, etc.
+                ...tempSelectedVehicle // agencyId, vehicleId, and 'fare' (FIXED)
+            };
+
+            // 2. Perform the fetch
             try {
-                const response = await fetch('http://localhost:5000/api/bookings', {
+                // --- *** PROPER FIX (BUG) *** ---
+                // Removed http://localhost:5000 to use a relative path.
+                const response = await fetch('/api/bookings', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(tempBookingDetails)
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(finalBookingData) // This now correctly contains 'fare'
                 });
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.message || 'Booking failed.');
 
+                // 3. Success
+                closeModal();
+
+                // This message is safe because displayMessage handles HTML strings
                 const successMessage = `
-                    <h3 class="text-lg font-semibold text-green-800">Request Sent!</h3>
-                    <p class="text-gray-600 mt-1">Your Booking ID is: <strong class="font-mono">${result.bookingId || 'SY-12345'}</strong></p>
-                    <p class="text-gray-500 text-sm mt-2">Your request has been sent to the agency for approval.</p>`;
+                <h3 class="text-lg font-semibold text-green-800">Request Sent!</h3>
+                <p class="text-gray-600 mt-1">Your Booking ID is: <strong class="font-mono">${result.bookingId || 'SY-12345'}</strong></p>
+                <p class="text-gray-500 text-sm mt-2">Your request has been sent to the agency for approval.</p>`;
                 displayMessage(successMessage, 'success');
 
                 // Reset UI
-                // bookingForm.reset(); // This will clear 'areaInput', 'cityInput', and the hidden 'pickupAddress'
                 agencyResultsContainer.classList.add('hidden');
+                savedRidesContainer.classList.add('hidden'); // Also hide shared rides
                 bookingForm.classList.remove('hidden');
                 calculatedDistance = 0;
                 distanceDisplay.textContent = '';
+                // bookingForm.reset(); // Optionally reset the form
 
             } catch (error) {
-                displayMessage(error.message, 'error');
-                selectedButton.disabled = false;
-                selectedButton.textContent = 'Book Now';
+                // 4. Failure - show error *inside* the modal
+                displayModalError(error.message);
+                setModalLoading(false); // Stop loading
             }
         });
 
-        // --- Other Functions and Event Listeners ---
+
+        // --- Other Functions and Event Listeners (Unchanged) ---
+
         backToFormBtn.addEventListener('click', () => {
             agencyResultsContainer.classList.add('hidden');
+            savedRidesContainer.classList.add('hidden'); // Also hide this
             bookingForm.classList.remove('hidden');
             messageArea.innerHTML = '';
         });
@@ -459,16 +1078,19 @@
             buttonSpinner.classList.toggle('hidden', !isLoading);
         }
 
-        // --- (Unchanged Functions) ---
         async function loadStations() {
             try {
                 const response = await fetch('stationdata.json');
-                if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const fullStationData = await response.json();
                 stationList.innerHTML = '';
                 fullStationData.lines.forEach(line => {
                     line.routes.forEach(route => {
-                        route.stations.forEach(station => { uniqueStationNames.add(station.station_name); });
+                        route.stations.forEach(station => {
+                            uniqueStationNames.add(station.station_name);
+                        });
                     });
                 });
                 uniqueStationNames.forEach(stationName => {
@@ -476,31 +1098,145 @@
                     option.value = stationName;
                     stationList.appendChild(option);
                 });
-            } catch (error) { console.error("Could not load station data:", error); }
+            } catch (error) {
+                console.error("Could not load station data:", error);
+            }
         }
+
         function setMinDateTime() {
             const now = new Date();
             const yyyy = now.getFullYear();
             const mm = String(now.getMonth() + 1).padStart(2, '0');
             const dd = String(now.getDate()).padStart(2, '0');
             dateInput.min = `${yyyy}-${mm}-${dd}`;
+
+            // Set min time only if the date is today
             if (dateInput.value === `${yyyy}-${mm}-${dd}`) {
                 const hh = String(now.getHours()).padStart(2, '0');
                 const min = String(now.getMinutes()).padStart(2, '0');
                 timeInput.min = `${hh}:${min}`;
-            } else { timeInput.min = ''; }
+            } else {
+                timeInput.min = '';
+            }
         }
+
         function toggleScheduleSection() {
             if (scheduleSaveRadio.checked) {
                 scheduleContainer.classList.add('visible');
-                dateInput.required = true; timeInput.required = true; setMinDateTime();
+                dateInput.required = true;
+                timeInput.required = true;
+                setMinDateTime();
             } else {
                 scheduleContainer.classList.remove('visible');
-                dateInput.required = false; timeInput.required = false;
+                dateInput.required = false;
+                timeInput.required = false;
             }
         }
+
+        // ---
+        // --- THIS FUNCTION LOGIC (for joining rides) IS UNCHANGED ---
+        // ---
+        // --- Join Ride Button Click Handler (Cleaned) ---
+        document.addEventListener('click', async function (e) {
+            if (!e.target.classList.contains('join-saved-btn')) {
+                return;
+            }
+
+            messageArea.innerHTML = ''; // Clear any previous messages
+
+            const btn = e.target;
+            btn.disabled = true;
+            const parentId = btn.dataset.parentId;
+            const fareElement = btn.closest('.ml-4.text-right').querySelector('.text-xs.text-gray-500.mt-2');
+            const calculatedJoinFare = fareElement ? parseFloat(fareElement.textContent.replace('₹', '')) : 0;
+            if (!parentId) {
+                alert("Error: Could not find ride ID. Please refresh.");
+                btn.disabled = false;
+                return;
+            }
+
+            updateHiddenPickupAddress();
+            const currentPickupAddress = pickupAddressInput.value;
+            const currentArea = areaInput.value;
+            const currentCity = cityInput.value;
+
+            if (!currentPickupAddress) {
+                alert("Please fill pickup address (Area / City) in the main form before requesting to join.");
+                btn.disabled = false;
+                return;
+            }
+
+            const userFromValue = fromInput.value.trim();
+            const userToValue = toInput.value.trim();
+
+            if (!userFromValue || !userToValue) {
+                alert("Please ensure 'From' and 'To' stations are selected in the main form before joining.");
+                btn.disabled = false;
+                return;
+            }
+
+            try {
+                const payload = {
+                    parentBookingId: parentId,
+                    pickupAddress: currentPickupAddress,
+                    area: currentArea,
+                    city: currentCity,
+                    userFrom: userFromValue,
+                    userTo: userToValue,
+                    userDistance: calculatedDistance,
+                    calculatedFare: calculatedJoinFare // Send the calculated fares    
+                };
+
+                const res = await fetch('/api/join-saved-ride', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.message || 'Failed to send join request');
+                }
+
+                // --- SUCCESS ---
+                displayMessage(`<strong class="text-green-800">Join request sent!</strong><div class="text-sm text-gray-600 mt-1">Request Booking ID: <code>${data.bookingId}</code></div>`, 'success');
+                btn.textContent = "Requested";
+                btn.classList.remove('bg-blue-600');
+                btn.classList.add('bg-gray-400');
+                btn.disabled = true; // Keep disabled
+
+                // Hide results and go back to form
+                agencyResultsContainer.classList.add('hidden');
+                savedRidesContainer.classList.add('hidden');
+                bookingForm.classList.remove('hidden');
+
+            } catch (err) {
+                // --- ERROR ---
+                console.error("Join request error:", err); // Keep console error for debugging
+                displayMessage(err.message || 'Could not send join request', 'error');
+                btn.disabled = false; // Re-enable button on error
+            }
+        });
+
+        // This function is "safe" because it parses the HTML string into nodes
+        // and appends them, rather than assigning to innerHTML directly.
         function displayMessage(message, type) {
-            messageArea.innerHTML = message;
+            // Clear previous message FIRST
+            messageArea.innerHTML = '';
+
+            // Create a temporary div to safely parse HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = message;
+
+            // Append the parsed nodes to messageArea
+            while (tempDiv.firstChild) {
+                messageArea.appendChild(tempDiv.firstChild);
+            }
+
+            // Set styles based on type
             messageArea.className = `mt-6 text-center p-4 rounded-lg ${type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`;
         }
 
@@ -510,19 +1246,16 @@
             toggleScheduleSection();
         });
 
-        // Location inputs
         fromInput.addEventListener('input', calculateAndDisplayDistance);
         toInput.addEventListener('input', calculateAndDisplayDistance);
 
-        // Booking type radios
         expressConnectRadio.addEventListener('change', toggleScheduleSection);
         scheduleSaveRadio.addEventListener('change', toggleScheduleSection);
         dateInput.addEventListener('change', setMinDateTime);
-
-        // --- NEW: Event listeners for structured address ---
         areaInput.addEventListener('input', updateHiddenPickupAddress);
         cityInput.addEventListener('input', updateHiddenPickupAddress);
-
+        areaInput.addEventListener('change', updateHiddenPickupAddress);
+        cityInput.addEventListener('change', updateHiddenPickupAddress);
     </script>
 </body>
 
