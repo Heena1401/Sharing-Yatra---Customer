@@ -71,6 +71,7 @@ transporter.verify((error, success) => {
 const isProduction = process.env.NODE_ENV === 'production';
 
 // ====== Session Setup ======
+
 app.use(session({
   secret: process.env.SESSION_SECRET || "secret123",
   resave: false,
@@ -82,13 +83,10 @@ app.use(session({
   cookie: {
     maxAge: 1000 * 60 * 60, // 1 hour
     httpOnly: true,
-    // Use secure cookies only in production (HTTPS)
-    secure: isProduction,
-    // 'none' for cross-site (Vercel), 'lax' for same-site (local)
-    sameSite: isProduction ? "none" : "lax"
+    secure: true,  // Force secure cookies for HTTPS (Vercel)
+    sameSite: "none" // Allow cross-site cookies
   }
 }));
-
 
 // ====== OTP Rate Limiter ======
 const otpLimiter = rateLimit({
