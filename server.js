@@ -68,12 +68,14 @@ transporter.verify((error, success) => {
 
 // ====== Session Setup ======
 app.set('trust proxy', 1); // <-- important for vercel to handle HTTPS
+const isProduction = process.env.NODE_ENV === "production";
 
 app.use(cors({
   origin: [
-    "https://sharing-yatra-customer.vercel.app",
-    "http://localhost:5000",
-    "http://localhost:3000"
+    "http://localhost:5500", // 🔹 Your local frontend (Live Server)
+    "http://localhost:3000", // 🔹 If you're testing React locally
+    "https://sharing-yatra-customer.vercel.app", // 🔹 Your deployed frontend
+    "https://sharing-yatra-customer-git-main-heenas-projects-46f0fe3a.vercel.app" // 🔹 alternate vercel preview URL
   ],
   methods: ["GET", "POST"],
   credentials: true,
@@ -90,8 +92,8 @@ app.use(session({
   cookie: {
     maxAge: 1000 * 60 * 60, // 1 hour
     httpOnly: true,
-    secure: true,           // HTTPS only for vercel
-    sameSite: "none",       // Allow cross-origin cookies
+    secure: false,           // HTTPS only for vercel
+    sameSite: "lax",       // Allow cross-origin cookies
   },
 }));
 
@@ -275,6 +277,8 @@ app.post("/login", async (req, res) => {
     res.json({ success: true, message: "Login successful" });
   } catch (err) {
     console.error("Login Error:", err);
+
+
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -286,7 +290,7 @@ app.get("/api/profile", (req, res) => {
   res.json(req.session.user);
 });
 
-app.get("/dashboard", (req, res) => {
+app.get("/dashboard.html", (req, res) => {
   if (!req.session.user) {
     return res.redirect("/login.html");
   }
